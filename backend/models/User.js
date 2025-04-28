@@ -35,7 +35,16 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    default: 'user'
+    enum: ['user', 'seller', 'admin'],
+    default: 'user' // Default role is user
+  },
+  status: {
+    type: String,
+    enum: ['pending', 'approved', 'rejected'],
+    default: function() {
+      // Default to 'approved' for users, 'pending' for sellers
+      return this.role === 'seller' ? 'pending' : 'approved';
+    }
   },
   createdAt: {
     type: Date,
