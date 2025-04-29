@@ -5,6 +5,10 @@ import Usersignup from './components/Usersignup';
 import Sellersignup from './components/Sellersignup';
 import Home from './components/Home';
 import Index from './components/Index';
+import SellerDashboard from './components/seller-dashbord';
+import Allusers from './components/admin/All-users';
+import Pendingsellers from './components/admin/Pending-sellers';
+
 
 function App() {
   return (
@@ -15,6 +19,11 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/usersignup" element={<Usersignup />} />
         <Route path="/sellersignup" element={<Sellersignup />} />
+        <Route path="/seller-dashbord" element={<SellerDashboard />} />
+
+        <Route path="/admin/all-users" element={<Allusers />} />
+        <Route path="/admin/pending-sellers" element={<Pendingsellers />} />
+
       </Routes>
     </Router>
   );

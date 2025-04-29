@@ -168,7 +168,7 @@ router.post(
               id: user._id,
               name: user.name,
               email: user.email,
-              role: user.role // Important: Send role also!
+              role: user.role
             }
           });
         }

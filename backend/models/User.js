@@ -41,10 +41,7 @@ const userSchema = new mongoose.Schema({
   status: {
     type: String,
     enum: ['pending', 'approved', 'rejected'],
-    default: function() {
-      // Default to 'approved' for users, 'pending' for sellers
-      return this.role === 'seller' ? 'pending' : 'approved';
-    }
+    
   },
   createdAt: {
     type: Date,
@@ -54,12 +51,23 @@ const userSchema = new mongoose.Schema({
   resetPasswordExpire: Date
 });
 
-// Hash password before saving
+// PRE-SAVE hook to hash password & set status
 userSchema.pre('save', async function(next) {
-  if (!this.isModified('password')) {
-    next();
+  // Hash password if modified
+  if (this.isModified('password')) {
+    this.password = await bcrypt.hash(this.password, 10);
   }
-  this.password = await bcrypt.hash(this.password, 10);
+
+  // Dynamically set status based on role
+  if (this.isNew) {
+    if (this.role === 'seller') {
+      this.status = 'pending';
+    } else if (this.role === 'user' || this.role === 'admin') {
+      this.status = 'approved';
+    }
+  }
+
+  next();
 });
 
 // Generate JWT token
@@ -70,7 +78,7 @@ userSchema.methods.getJwtToken = function() {
 };
 
 // Compare password
-userSchema.methods.comparePassword = async function(enteredPassword) {
+userSchema.methods.comparePassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
 

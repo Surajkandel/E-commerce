@@ -15,13 +15,23 @@ const Login = () => {
         email,
         password,
       });
-      
-      // Save token to localStorage (or cookies for better security)
-      localStorage.setItem('token', response.data.token);
-      
-      // Redirect to home/dashboard after login
-      navigate('/');
+
+      const { token, user } = response.data;
+
+      // Save token and user info (optional)
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(user));
+
+      // Role-based navigation
+      if (user.role === 'admin') {
+        navigate('/admin/Pending-seller');
+      } else if (user.role === 'seller') {
+        navigate('/seller-dashbord');
+      } else {
+        navigate('/index'); // default for regular users
+      }
     } catch (err) {
+      console.log(err);
       setError(err.response?.data?.message || 'Login failed');
     }
   };

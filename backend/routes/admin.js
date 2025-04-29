@@ -3,58 +3,137 @@ const router = express.Router();
 const User = require('../models/User');
 const { verifyToken, verifyAdmin } = require('../middleware/authMiddleware');
 
-// @route   GET api/admin/pending-sellers
-// @desc    Get all pending sellers
-// @access  Admin only
+/**
+ * @route   GET /api/admin/all-users
+ * @desc    Get all users (excluding passwords)
+ * @access  Admin only
+ */
+router.get('/all-users', verifyToken, verifyAdmin, async (req, res) => {
+  try {
+    const users = await User.find()
+      .select('-password -__v')
+      .sort({ createdAt: -1 }); // Newest first
+      
+    res.json({ 
+      success: true,
+      count: users.length,
+      users 
+    });
+  } catch (err) {
+    console.error('Admin fetch error:', err.message);
+    res.status(500).json({ 
+      success: false,
+      error: 'Server error' 
+    });
+  }
+});
+
+/**
+ * @route   GET /api/admin/pending-sellers
+ * @desc    Get pending sellers with business info
+ * @access  Admin only
+ */
 router.get('/pending-sellers', verifyToken, verifyAdmin, async (req, res) => {
   try {
-    const pendingSellers = await User.find({ role: 'seller', status: 'pending' });
-    res.json(pendingSellers);
+    const sellers = await User.find({ 
+      role: 'seller', 
+      status: 'pending' 
+    })
+    .select('-password -__v')
+    .populate('businessInfo', 'businessName taxId'); // If businessInfo is a reference
+
+    res.json({ 
+      success: true,
+      count: sellers.length,
+      sellers 
+    });
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error');
+    console.error('Pending sellers error:', err.message);
+    res.status(500).json({ 
+      success: false,
+      error: 'Server error' 
+    });
   }
 });
 
-// @route   POST api/admin/approve-seller/:id
-// @desc    Approve a seller
-// @access  Admin only
-router.post('/approve-seller/:id', verifyToken, verifyAdmin, async (req, res) => {
+/**
+ * @route   PATCH /api/admin/approve-seller/:id
+ * @desc    Approve a seller application
+ * @access  Admin only
+ */
+router.patch('/approve-seller/:id', verifyToken, verifyAdmin, async (req, res) => {
   try {
-    const seller = await User.findById(req.params.id);
+    const seller = await User.findOneAndUpdate(
+      { 
+        _id: req.params.id, 
+        role: 'seller',
+        status: 'pending' // Ensure only pending sellers can be approved
+      },
+      { status: 'approved' },
+      { new: true, runValidators: true }
+    ).select('-password');
 
-    if (!seller || seller.role !== 'seller') {
-      return res.status(404).json({ msg: 'Seller not found' });
+    if (!seller) {
+      return res.status(404).json({ 
+        success: false,
+        error: 'Seller not found or already processed' 
+      });
     }
 
-    seller.status = 'approved';
-    await seller.save();
-
-    res.json({ msg: 'Seller approved successfully' });
+    res.json({ 
+      success: true,
+      message: 'Seller approved',
+      seller 
+    });
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error');
+    console.error('Approval error:', err.message);
+    res.status(500).json({ 
+      success: false,
+      error: 'Server error' 
+    });
   }
 });
 
-// @route   POST api/admin/reject-seller/:id
-// @desc    Reject a seller
-// @access  Admin only
-router.post('/reject-seller/:id', verifyToken, verifyAdmin, async (req, res) => {
+/**
+ * @route   PATCH /api/admin/reject-seller/:id
+ * @desc    Reject a seller application with optional reason
+ * @access  Admin only
+ */
+router.patch('/reject-seller/:id', verifyToken, verifyAdmin, async (req, res) => {
   try {
-    const seller = await User.findById(req.params.id);
+    const { rejectionReason } = req.body;
 
-    if (!seller || seller.role !== 'seller') {
-      return res.status(404).json({ msg: 'Seller not found' });
+    const seller = await User.findOneAndUpdate(
+      { 
+        _id: req.params.id, 
+        role: 'seller',
+        status: 'pending' // Ensure only pending sellers can be rejected
+      },
+      { 
+        status: 'rejected',
+        ...(rejectionReason && { rejectionReason }) // Optional field
+      },
+      { new: true }
+    ).select('-password');
+
+    if (!seller) {
+      return res.status(404).json({ 
+        success: false,
+        error: 'Seller not found or already processed' 
+      });
     }
 
-    seller.status = 'rejected';
-    await seller.save();
-
-    res.json({ msg: 'Seller rejected successfully' });
+    res.json({ 
+      success: true,
+      message: 'Seller rejected',
+      seller 
+    });
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error');
+    console.error('Rejection error:', err.message);
+    res.status(500).json({ 
+      success: false,
+      error: 'Server error' 
+    });
   }
 });
 
