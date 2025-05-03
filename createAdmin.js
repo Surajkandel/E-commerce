@@ -7,12 +7,12 @@ const db = require('./backend/config/db');
 const createAdmin = async () => {
   await db(); // connect to database
 
-  const hashedPassword = await bcrypt.hash('123456', 10);
+  
 
   const admin = new User({
     name: 'Admin',
     email: 'admin@gmail.com',
-    password: hashedPassword,
+    password: '123456',
     role: 'admin',
     status: 'approved'
   });

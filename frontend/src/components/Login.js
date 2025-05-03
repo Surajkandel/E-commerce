@@ -24,7 +24,7 @@ const Login = () => {
 
       // Role-based navigation
       if (user.role === 'admin') {
-        navigate('/admin/Pending-seller');
+        navigate('/admin/Pending-sellers');
       } else if (user.role === 'seller') {
         navigate('/seller-dashbord');
       } else {
