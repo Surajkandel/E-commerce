@@ -23,7 +23,7 @@ app.use(cors(corsOptions));  // Apply the CORS settings globally
 app.use(express.json());
 
 // Define Routes
-app.use('/api/auth', require('./backend/routes/auth'));
+app.use('/api/auth', require('./backend/routes/authRoutes'));
 
 app.use('/api/admin', require('./backend/routes/admin'));
 

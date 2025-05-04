@@ -16,7 +16,9 @@ const Login = () => {
         password,
       });
 
-      const { token, user } = response.data;
+      console.log('Login Response:', response.data);
+
+      const { token, user } = response.data.data;
 
       // Save token and user info (optional)
       localStorage.setItem('token', token);
