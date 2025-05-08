@@ -27,6 +27,8 @@ app.use('/api/auth', require('./backend/routes/authRoutes'));
 
 app.use('/api/admin', require('./backend/routes/admin'));
 
+app.use('/api/products', require('./backend/routes/productRoutes'));
+
 // Test route
 app.get('/', (req, res) => res.send('API Running'));
 

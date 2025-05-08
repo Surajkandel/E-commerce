@@ -1,5 +1,5 @@
 // productController.js
-const Product = require('../models/productModel');
+const Product = require('../models/Product');
 const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
 

@@ -9,7 +9,7 @@ router.use(authController.protect);
 
 // Routes for sellers to manage their products
 router
-  .route('/my-products')
+  .route('/products')
   .get(productController.getMyProducts);
 
 router
